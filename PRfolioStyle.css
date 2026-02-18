@@ -16,6 +16,13 @@
   -ms-user-select: none;
 }
 
+#color-toggle{
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+
 #color-toggle,
 #color-toggle *{
   user-select: none;
