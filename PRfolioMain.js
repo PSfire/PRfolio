@@ -126,29 +126,31 @@ function updateResolution() {
     cursorEl.textContent = `X: ${e.clientX} | Y: ${e.clientY}`;
   });
 
-function bindColorToggle() {
-  const trigger = document.getElementById("color-toggle");
-  if (!trigger) return;
+  (function initColorToggle(){
+    const el = document.getElementById("color-toggle");
+    if (!el) return;
 
-  const labelEl = trigger.querySelector(".colorSwapper") || trigger.querySelector("h1");
+    const labelEl = el.querySelector(".colorSwapper") || el.querySelector("h1");
 
-  const nextColor = (e) => {
-    if (e) e.preventDefault();
+    const getScope = () => document.querySelector(".color-scope") || document.documentElement;
 
-    colorIndex = (colorIndex + 1) % colors.length;
-    scope.style.setProperty("--colors--sixth-color", colors[colorIndex]);
-    if (labelEl) labelEl.textContent = labels[colorIndex];
-  };
+    const applyNext = () => {
+      colorIndex = (colorIndex + 1) % colors.length;
+      getScope().style.setProperty("--colors--sixth-color", colors[colorIndex]);
+      if (labelEl) labelEl.textContent = labels[colorIndex];
+    };
 
-  trigger.addEventListener("pointerup", nextColor, { passive: false });
-  trigger.addEventListener("touchend", nextColor, { passive: false });
-  trigger.addEventListener("click", nextColor);
-}
+    let locked = false;
+    const fire = (e) => {
+      if (e) e.preventDefault();
+      if (locked) return;
+      locked = true;
+      applyNext();
+      setTimeout(() => (locked = false), 250);
+    };
 
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", bindColorToggle);
-} else {
-  bindColorToggle();
-}
+    el.addEventListener("touchstart", (e) => e.preventDefault(), { passive: false });
+    el.addEventListener("touchend", fire, { passive: false });
+    el.addEventListener("click", fire);
+  })();
 
-})();
