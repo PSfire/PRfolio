@@ -1,4 +1,3 @@
-<script>
 (() => {
   const chars = "01_-=+{}[]<>?/\\|~^@#$%&*";
   const timeout = 50;
@@ -139,4 +138,3 @@ function updateResolution() {
     });
   }
 })();
-</script>
