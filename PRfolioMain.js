@@ -126,15 +126,29 @@ function updateResolution() {
     cursorEl.textContent = `X: ${e.clientX} | Y: ${e.clientY}`;
   });
 
-  if (trigger) {
-    const labelEl = trigger.querySelector(".colorSwapper") || trigger.querySelector("h1");
+function bindColorToggle() {
+  const trigger = document.getElementById("color-toggle");
+  if (!trigger) return;
 
-    trigger.addEventListener("click", () => {
-      colorIndex = (colorIndex + 1) % colors.length;
+  const labelEl = trigger.querySelector(".colorSwapper") || trigger.querySelector("h1");
 
-      scope.style.setProperty("--colors--sixth-color", colors[colorIndex]);
+  const nextColor = (e) => {
+    if (e) e.preventDefault();
 
-      if (labelEl) labelEl.textContent = labels[colorIndex];
-    });
-  }
+    colorIndex = (colorIndex + 1) % colors.length;
+    scope.style.setProperty("--colors--sixth-color", colors[colorIndex]);
+    if (labelEl) labelEl.textContent = labels[colorIndex];
+  };
+
+  trigger.addEventListener("pointerup", nextColor, { passive: false });
+  trigger.addEventListener("touchend", nextColor, { passive: false });
+  trigger.addEventListener("click", nextColor);
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", bindColorToggle);
+} else {
+  bindColorToggle();
+}
+
 })();
