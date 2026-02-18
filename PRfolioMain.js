@@ -4,96 +4,104 @@
   const scrambleMs = 35;
   const scrambleSteps = 10;
 
-  const heading = ".heading__color";
-  const letter = "letter";
+  const headingSel = ".heading__color";
+  const letterClass = "letter";
 
   const colors = ["#02f", "#ff0040", "#00ff22", "#ffa200"];
   const labels = ["Color_V1", "Color_V2", "Color_V3", "Color_V4"];
   let colorIndex = 0;
 
-  const $win = $(window);
-  const $doc = $(document);
+  const randChar = () => chars[(Math.random() * chars.length) | 0];
 
   const clockEl = document.getElementById("clock");
   const cursorEl = document.getElementById("cursor-pos");
   const resEl = document.getElementById("resolution");
-  const trigger = document.getElementById("color-toggle");
-
-  const scope = document.querySelector(".color-scope") || document.documentElement;
 
   document.body.classList.add("color-ease");
 
-  const randChar = () => chars[(Math.random() * chars.length) | 0];
+  const wrapHeadings = () => {
+    document.querySelectorAll(headingSel).forEach((el) => {
+      if (el.querySelector(":scope > .letters-wrap")) return;
 
-  $(heading).each(function () {
-    const $el = $(this);
+      const wrap = document.createElement("span");
+      wrap.className = "letters-wrap";
+      wrap.textContent = el.textContent;
 
-    if ($el.find("> .letters-wrap").length === 0) {
-      $el.wrapInner('<span class="letters-wrap"></span>');
-    }
+      el.textContent = "";
+      el.appendChild(wrap);
 
-    const $root = $el.find("> .letters-wrap");
-    const text = $root.text();
-    const tokens = text.split(/(\s+)/);
+      const text = wrap.textContent;
+      const tokens = text.split(/(\s+)/);
 
-    let html = "";
-    for (const tok of tokens) {
-      if (!tok) continue;
+      let html = "";
+      for (const tok of tokens) {
+        if (!tok) continue;
 
-      if (/^\s+$/.test(tok)) {
-        html += tok;
-        continue;
+        if (/^\s+$/.test(tok)) {
+          html += tok;
+          continue;
+        }
+
+        html += '<span class="word">';
+        for (const ch of tok) {
+          html += `<span class="${letterClass}" data-original="${ch}">${ch}</span>`;
+        }
+        html += "</span>";
       }
 
-      html += '<span class="word">';
-      for (const ch of tok) {
-        html += `<span class="${letter}" data-original="${ch}">${ch}</span>`;
-      }
-      html += "</span>";
-    }
+      wrap.innerHTML = html;
+    });
+  };
 
-    $root.html(html);
-  });
+  const bindMatrixHover = () => {
+    document.addEventListener("mouseenter", (e) => {
+      const t = e.target;
+      if (!t || !t.classList || !t.classList.contains(letterClass)) return;
 
-  $doc.on("mouseenter", "." + letter, function () {
-    const el = $(this);
-    if (el.data("scrambling")) return;
+      if (t.dataset.scrambling === "1") return;
+      t.dataset.scrambling = "1";
 
-    el.data("scrambling", true);
+      const original = t.getAttribute("data-original") ?? t.textContent;
+      let step = 0;
 
-    const original = el.data("original");
-    let step = 0;
+      const id = setInterval(() => {
+        t.textContent = randChar();
+        step++;
 
-    const intervalId = setInterval(() => {
-      el.text(randChar());
-      step++;
+        if (step >= scrambleSteps) {
+          clearInterval(id);
+          t.textContent = original;
+          t.dataset.scrambling = "0";
+        }
+      }, scrambleMs);
 
-      if (step >= scrambleSteps) {
-        clearInterval(intervalId);
-        el.text(original);
-        el.data("scrambling", false);
-      }
-    }, scrambleMs);
+      t.dataset.intervalId = String(id);
+    }, true);
 
-    el.data("intervalId", intervalId);
-  });
+    document.addEventListener("mouseleave", (e) => {
+      const t = e.target;
+      if (!t || !t.classList || !t.classList.contains(letterClass)) return;
 
-  $doc.on("mouseleave", "." + letter, function () {
-    const el = $(this);
-    const original = el.data("original");
+      const original = t.getAttribute("data-original") ?? t.textContent;
 
-    const intervalId = el.data("intervalId");
-    if (intervalId) clearInterval(intervalId);
+      const intervalId = Number(t.dataset.intervalId || 0);
+      if (intervalId) clearInterval(intervalId);
 
-    el.data("scrambling", false);
+      t.dataset.scrambling = "0";
 
-    clearTimeout(el.data("t"));
-    el.data("t", setTimeout(() => el.text(original), timeout));
-  });
+      const prevT = Number(t.dataset.tid || 0);
+      if (prevT) clearTimeout(prevT);
 
-  function updateClock() {
+      const tid = window.setTimeout(() => {
+        t.textContent = original;
+      }, timeout);
+
+      t.dataset.tid = String(tid);
+    }, true);
+  };
+
+  const updateClock = () => {
     if (!clockEl) return;
-
     const now = new Date();
     const time = now.toLocaleTimeString("fr-FR", {
       timeZone: "Europe/Paris",
@@ -101,32 +109,24 @@
       minute: "2-digit",
       second: "2-digit",
     });
-
     clockEl.textContent = `${time} CET`;
-  }
+  };
 
-function updateResolution() {
-  if (!resEl) return;
+  const updateResolution = () => {
+    if (!resEl) return;
+    const w = window.innerWidth.toFixed(2);
+    const h = window.innerHeight.toFixed(2);
+    resEl.textContent = `${w} x ${h}`;
+  };
 
-  const width = window.innerWidth.toFixed(2);
-  const height = window.innerHeight.toFixed(2);
+  const bindCursor = () => {
+    document.addEventListener("mousemove", (e) => {
+      if (!cursorEl) return;
+      cursorEl.textContent = `X: ${e.clientX} | Y: ${e.clientY}`;
+    });
+  };
 
-  resEl.textContent = `${width} x ${height}`;
-}
-
-
-  updateClock();
-  setInterval(updateClock, 1000);
-
-  updateResolution();
-  $win.on("resize", updateResolution);
-
-  document.addEventListener("mousemove", (e) => {
-    if (!cursorEl) return;
-    cursorEl.textContent = `X: ${e.clientX} | Y: ${e.clientY}`;
-  });
-
-  (function initColorToggle(){
+  const bindColorToggle = () => {
     const el = document.getElementById("color-toggle");
     if (!el) return;
 
@@ -152,5 +152,25 @@ function updateResolution() {
     el.addEventListener("touchstart", (e) => e.preventDefault(), { passive: false });
     el.addEventListener("touchend", fire, { passive: false });
     el.addEventListener("click", fire);
-  })();
+  };
 
+  const init = () => {
+    wrapHeadings();
+    bindMatrixHover();
+
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    updateResolution();
+    window.addEventListener("resize", updateResolution);
+
+    bindCursor();
+    bindColorToggle();
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
