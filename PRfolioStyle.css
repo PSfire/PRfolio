@@ -1,0 +1,53 @@
+.letters-wrap { display: inline; }
+.word { white-space: nowrap; }
+.color-ease,
+.color-ease *{
+  transition:
+    color cubic-bezier(.16, 1, .3, 1),
+    background-color cubic-bezier(.16, 1, .3, 1),
+    border-color cubic-bezier(.16, 1, .3, 1),
+    fill cubic-bezier(.16, 1, .3, 1),
+    stroke cubic-bezier(.16, 1, .3, 1);
+}
+
+.colorSwapper{
+  user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+}
+
+#color-toggle,
+#color-toggle *{
+  user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+}
+
+#logo,
+#logo *{
+  user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+}
+
+
+::selection{
+  background: color-mix(in oklab, var(--colors--sixth-color) 30%, white);
+  color: color-mix(in oklab, var(--colors--sixth-color) 80%, black);
+}
+
+
+::-moz-selection{
+  background: color-mix(in oklab, var(--colors--sixth-color) 35%, white);
+  color: #000;
+}
+.lottie-theme svg path,
+.lottie-theme svg rect,
+.lottie-theme svg circle,
+.lottie-theme svg ellipse,
+.lottie-theme svg polygon,
+.lottie-theme svg polyline,
+.lottie-theme svg g{
+  fill: var(--colors--sixth-color) !important;
+  stroke: var(--colors--sixth-color) !important;
+}
